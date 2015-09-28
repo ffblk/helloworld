@@ -1,0 +1,81 @@
+﻿@using TestApp.Models;
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+        <style type="text/css">            
+            .colm { width:  400px; height: 15px;}
+            .grid { margin: 4px; border-collapse: collapse; width: 800px; }
+            .grid th, .grid td { border: 1px solid #C0C0C0; padding: 5px; }
+            .head { background-color: #E8E8E8; font-weight: bold; color: #FFF; }
+            .alt { background-color: #E8E8E8; color: #000; }
+        </style>
+    <script  language="JavaScript" type="text/javascript" src="~/Scripts/jquery-2.1.4.js"></script>
+    <script>
+    $(function () {
+        $('.edit-mode').hide();
+        $('.display-mode').on('click', function () {
+            var tr = $(this).parents('tr:first');
+            tr.find('.edit-mode, .display-mode').toggle();
+            tr.find('.edit-mode').focus();
+        });
+        $('.edit-mode').blur(function () {
+            var tr = $(this).parents('tr:first');
+            var id = (this.getAttribute("data-parameter"));
+            var salary = tr.find('#SurName').val();
+
+            var dummyurl = '@Url.Action("EditSalary", new {id = "abc", salary = "sdsdsd"})';
+            var path = dummyurl.replace("abc", id);
+            var path1 = path.replace("sdsdsd", salary);
+            tr.find('.edit-mode, .display-mode').toggle();
+            location.href = path1;  
+        });
+        $('.edit-choice').change(function () {
+            var tr = $(this).parents('tr:first');            
+            var choice = $("#myDDL option:selected").val();
+
+            var dummyurl = '@Url.Action("Index", new {id = "abc"})';
+            var path = dummyurl.replace("abc", choice);
+            location.href = path;
+        });
+
+    })
+</script>  
+</head>
+
+<body>    
+    @{
+        var grid = new WebGrid(source: Employees.EmpList(ViewBag.choice));
+        
+        List<SelectListItem> list = new List<SelectListItem>();//Список значений для DDL
+        foreach (Job e in ViewBag.jobs)
+        {
+            list.Add(new SelectListItem() { Value = e.Id.ToString(), Text = e.Job_nm });//Заполняем его
+        }
+        }
+
+            Job Title: @Html.DropDownList("myDDL",list,new {@class="edit-choice"})
+    <br>
+    Employees/Salary:
+    <div>
+        @grid.GetHtml(
+        tableStyle: "grid",
+        headerStyle: "head",
+        alternatingRowStyle: "alt",
+        columns: grid.Columns(
+        grid.Column("full_name","Full name", style: "colm"),
+        grid.Column("salary", "Salary", style: "colm",
+                    format: 
+                        @<text>
+                            <span id="salary" class="display-mode">@item.salary</span>
+                            <input type="text" id="SurName" value="@item.salary" class="edit-mode" data-parameter="@item.emp_id"/>                      
+                        </text>)
+                    )
+        )
+    </div>
+</body>
+</html>
